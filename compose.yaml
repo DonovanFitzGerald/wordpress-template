@@ -1,0 +1,112 @@
+services:
+    nginx:
+        image: nginx:1.29-alpine
+        container_name: ${SITE_HOSTNAME}-nginx
+        restart: unless-stopped
+        depends_on:
+            - wordpress
+        volumes:
+            - wordpress_data:/var/www/html
+            - ./nginx/site.conf.template:/etc/nginx/conf.d/default.conf:ro
+        networks:
+            - internal
+            - proxy
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=${PROXY_NETWORK}
+            - traefik.http.routers.${SITE_HOSTNAME}.rule=Host(`${SITE_DOMAIN}`)
+            - traefik.http.routers.${SITE_HOSTNAME}.entrypoints=websecure
+            - traefik.http.routers.${SITE_HOSTNAME}.tls=true
+            - traefik.http.services.${SITE_HOSTNAME}.loadbalancer.server.port=80
+
+    wordpress:
+        build:
+            context: ./app
+        container_name: ${SITE_HOSTNAME}-wordpress
+        restart: unless-stopped
+        depends_on:
+            - redis-check
+        environment:
+            WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+            WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+            WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+            WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+            WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
+            WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+            WORDPRESS_ENV: ${WORDPRESS_ENV}
+            WORDPRESS_CONFIG_EXTRA: |
+                define('WP_HOME', 'https://${SITE_DOMAIN}');
+                define('WP_SITEURL', 'https://${SITE_DOMAIN}');
+                define('FORCE_SSL_ADMIN', true);
+                define('WP_ENVIRONMENT_TYPE', '${WORDPRESS_ENV}');
+
+                if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+                    $_SERVER['HTTPS'] = 'on';
+                }
+
+                define('WP_CACHE', true);
+                define('WP_REDIS_HOST', '${WORDPRESS_REDIS_HOST}');
+                define('WP_REDIS_PORT', (int) '${WORDPRESS_REDIS_PORT}');
+                define('WP_REDIS_PREFIX', '${WORDPRESS_REDIS_PREFIX}');
+
+                define('DISALLOW_FILE_EDIT', true);
+
+                define('AUTH_KEY', '${WORDPRESS_AUTH_KEY}');
+                define('SECURE_AUTH_KEY', '${WORDPRESS_SECURE_AUTH_KEY}');
+                define('LOGGED_IN_KEY', '${WORDPRESS_LOGGED_IN_KEY}');
+                define('NONCE_KEY', '${WORDPRESS_NONCE_KEY}');
+        volumes:
+            - wordpress_data:/var/www/html
+            - ./wp-config-extra.php:/usr/src/wordpress/wp-config-extra.php:ro
+        networks:
+            - internal
+            - redis
+
+    wp-cli:
+        image: wordpress:cli-php8.3
+        container_name: ${SITE_HOSTNAME}-wp-cli
+        profiles:
+            - tools
+        user: "33:33"
+        working_dir: /var/www/html
+        environment:
+            WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+            WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+            WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+            WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+        volumes:
+            - wordpress_data:/var/www/html
+            - ./wp-config-extra.php:/var/www/html/wp-config-extra.php:ro
+        networks:
+            - internal
+            - redis
+        entrypoint: ["wp"]
+
+    redis-check:
+        image: redis:8-alpine
+        container_name: ${SITE_HOSTNAME}-redis-check
+        command:
+            [
+                "sh",
+                "-c",
+                "nc -z ${WORDPRESS_REDIS_HOST} ${WORDPRESS_REDIS_PORT}",
+            ]
+        restart: "no"
+        networks:
+            - redis
+
+volumes:
+    wordpress_data:
+        name: ${SITE_HOSTNAME}_wordpress_data
+
+networks:
+    internal:
+        driver: bridge
+
+    proxy:
+        name: ${PROXY_NETWORK}
+        external: true
+
+    redis:
+        name: ${REDIS_NETWORK}
+        external: true

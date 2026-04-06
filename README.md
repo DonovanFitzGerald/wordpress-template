@@ -7,7 +7,7 @@ wordpress-site-template/
 ├── compose.yaml
 ├── .env.example
 ├── README.md
-├── /app
+├── /php
 │   ├── Dockerfile
 │   ├── php.ini
 │   └── entrypoint.sh
