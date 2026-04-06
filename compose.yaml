@@ -21,7 +21,7 @@ services:
 
     wordpress:
         build:
-            context: ./app
+            context: ./php
         container_name: ${SITE_HOSTNAME}-wordpress
         restart: unless-stopped
         depends_on:
