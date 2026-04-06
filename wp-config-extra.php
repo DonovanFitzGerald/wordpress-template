@@ -4,10 +4,7 @@ define('WP_ENVIRONMENT_TYPE', getenv('WORDPRESS_ENV') ?: 'production');
 
 define('FORCE_SSL_ADMIN', true);
 
-if (
-    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-    $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https'
-) {
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
     $_SERVER['HTTPS'] = 'on';
 }
 
@@ -21,6 +18,11 @@ if (getenv('WORDPRESS_REDIS_HOST')) {
     define('WP_REDIS_HOST', getenv('WORDPRESS_REDIS_HOST'));
     define('WP_REDIS_PORT', (int) (getenv('WORDPRESS_REDIS_PORT') ?: 6379));
     define('WP_REDIS_PREFIX', getenv('WORDPRESS_REDIS_PREFIX') ?: 'wp:');
+}
+
+if (getenv('SITE_DOMAIN')) {
+    define('WP_HOME', 'https://' . getenv('SITE_DOMAIN'));
+    define('WP_SITEURL', 'https://' . getenv('SITE_DOMAIN'));
 }
 
 foreach ([

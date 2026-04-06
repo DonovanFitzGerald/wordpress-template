@@ -34,27 +34,17 @@ services:
             WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
             WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
             WORDPRESS_ENV: ${WORDPRESS_ENV}
-            WORDPRESS_CONFIG_EXTRA: |
-                define('WP_HOME', 'https://${SITE_DOMAIN}');
-                define('WP_SITEURL', 'https://${SITE_DOMAIN}');
-                define('FORCE_SSL_ADMIN', true);
-                define('WP_ENVIRONMENT_TYPE', '${WORDPRESS_ENV}');
-
-                if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
-                    $_SERVER['HTTPS'] = 'on';
-                }
-
-                define('WP_CACHE', true);
-                define('WP_REDIS_HOST', '${WORDPRESS_REDIS_HOST}');
-                define('WP_REDIS_PORT', (int) '${WORDPRESS_REDIS_PORT}');
-                define('WP_REDIS_PREFIX', '${WORDPRESS_REDIS_PREFIX}');
-
-                define('DISALLOW_FILE_EDIT', true);
-
-                define('AUTH_KEY', '${WORDPRESS_AUTH_KEY}');
-                define('SECURE_AUTH_KEY', '${WORDPRESS_SECURE_AUTH_KEY}');
-                define('LOGGED_IN_KEY', '${WORDPRESS_LOGGED_IN_KEY}');
-                define('NONCE_KEY', '${WORDPRESS_NONCE_KEY}');
+            WORDPRESS_REDIS_HOST: ${WORDPRESS_REDIS_HOST}
+            WORDPRESS_REDIS_PORT: ${WORDPRESS_REDIS_PORT}
+            WORDPRESS_REDIS_PREFIX: ${WORDPRESS_REDIS_PREFIX}
+            WORDPRESS_AUTH_KEY: ${WORDPRESS_AUTH_KEY}
+            WORDPRESS_SECURE_AUTH_KEY: ${WORDPRESS_SECURE_AUTH_KEY}
+            WORDPRESS_LOGGED_IN_KEY: ${WORDPRESS_LOGGED_IN_KEY}
+            WORDPRESS_NONCE_KEY: ${WORDPRESS_NONCE_KEY}
+            WORDPRESS_AUTH_SALT: ${WORDPRESS_AUTH_SALT}
+            WORDPRESS_SECURE_AUTH_SALT: ${WORDPRESS_SECURE_AUTH_SALT}
+            WORDPRESS_LOGGED_IN_SALT: ${WORDPRESS_LOGGED_IN_SALT}
+            WORDPRESS_NONCE_SALT: ${WORDPRESS_NONCE_SALT}
         volumes:
             - wordpress_data:/var/www/html
             - ./wp-config-extra.php:/usr/src/wordpress/wp-config-extra.php:ro
