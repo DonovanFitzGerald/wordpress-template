@@ -53,10 +53,10 @@ fi
 echo "Installing WordPress for https://$SITE_DOMAIN ..."
 compose run --rm --no-deps wp-cli core install \
     --url="https://$SITE_DOMAIN" \
-    --title="$WORDPRESS_SITE_TITLE" \
-    --admin_user="$WORDPRESS_ADMIN_USER" \
-    --admin_password="$WORDPRESS_ADMIN_PASSWORD" \
-    --admin_email="$WORDPRESS_ADMIN_EMAIL" \
+    --title="$SITE_HOSTNAME" \
+    --admin_user="admin" \
+    --admin_password="replace_this" \
+    --admin_email="admin@example.com" \
     --skip-email
 
 echo "Flushing rewrite rules..."
@@ -64,4 +64,5 @@ compose run --rm --no-deps wp-cli rewrite flush --hard
 
 echo "Installation complete."
 echo "Site: https://$SITE_DOMAIN"
-echo "Admin user: $WORDPRESS_ADMIN_USER"
+echo "Admin user: admin"
+echo "Admin password: replace_this"
