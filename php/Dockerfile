@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    mariadb-client \
     netcat-openbsd \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -16,9 +15,3 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
-COPY entrypoint.sh /usr/local/bin/wordpress-entrypoint-custom.sh
-
-RUN chmod +x /usr/local/bin/wordpress-entrypoint-custom.sh
-
-ENTRYPOINT ["wordpress-entrypoint-custom.sh"]
-CMD ["php-fpm"]
