@@ -40,3 +40,7 @@ foreach ([
         define($constant, $value);
     }
 }
+
+if (getenv('WP_MIGRATE_LICENSE') && !defined('WPMDB_LICENCE')) {
+    define('WPMDB_LICENCE', getenv('WP_MIGRATE_LICENSE'));
+}
