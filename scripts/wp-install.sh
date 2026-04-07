@@ -184,7 +184,7 @@ fi
 
 if [ -n "${WP_MIGRATE_ZIP:-}" ] && [ -f "$WP_MIGRATE_ZIP" ]; then
     echo "Installing or activating WP Migrate..."
-    compose run --rm --no-deps wp-cli plugin install "$WP_MIGRATE_ZIP" --force
+    compose run --rm --no-deps wp-cli plugin install "$WP_MIGRATE_ZIP" --force --activate
 fi
 
 echo "Installation complete."
