@@ -45,7 +45,16 @@ if (getenv('WP_MIGRATE_LICENSE') && !defined('WPMDB_LICENCE')) {
     define('WPMDB_LICENCE', getenv('WP_MIGRATE_LICENSE'));
 }
 
+if (!defined('WP_DEBUG')) {
+    define('WP_DEBUG', false);
+}
+
 if (!defined('WP_DEBUG_DISPLAY')) {
     define('WP_DEBUG_DISPLAY', false);
 }
+
+if (!defined('WP_DEBUG_LOG')) {
+    define('WP_DEBUG_LOG', true);
+}
+
 @ini_set('display_errors', '0');
