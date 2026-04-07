@@ -44,3 +44,8 @@ foreach ([
 if (getenv('WP_MIGRATE_LICENSE') && !defined('WPMDB_LICENCE')) {
     define('WPMDB_LICENCE', getenv('WP_MIGRATE_LICENSE'));
 }
+
+if (!defined('WP_DEBUG_DISPLAY')) {
+    define('WP_DEBUG_DISPLAY', false);
+}
+@ini_set('display_errors', '0');

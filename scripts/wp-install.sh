@@ -182,16 +182,23 @@ else
     echo "WordPress is already installed for project: $PROJECT_NAME"
 fi
 
-if [ -n "${WP_MIGRATE_ZIP:-}" ]; then
-    echo "Installing or activating WP Migrate..."
-    compose run --rm --no-deps wp-cli plugin install "$WP_MIGRATE_ZIP" --force --activate
-fi
-
 echo "Installation complete."
 echo "Site: https://$SITE_DOMAIN"
 echo "Admin user: $WORDPRESS_ADMIN_USER"
 
-if compose run --rm --no-deps wp-cli plugin is-active wp-migrate-db-pro >/dev/null 2>&1; then
+if [ -n "${WP_MIGRATE_ZIP:-}" ]; then
+    echo "Installing or activating WP Migrate..."
+    compose run --rm --no-deps wp-cli plugin install "$WP_MIGRATE_ZIP" --force --activate
+
+    if [ -n "${WP_MIGRATE_LICENSE:-}" ]; then
+        echo "Activating WP Migrate license..."
+        compose run --rm --no-deps wp-cli migratedb setting update license "$WP_MIGRATE_LICENSE" --user=1
+    fi
+
+    echo "Enabling WP Migrate push/pull permissions..."
+    compose run --rm --no-deps wp-cli migratedb setting update push on
+    compose run --rm --no-deps wp-cli migratedb setting update pull on
+
     MIGRATE_KEY="$(compose run --rm --no-deps wp-cli migratedb setting get connection-key | tail -n 1 | tr -d '\r')"
     echo "WP_MIGRATE_CONNECTION=https://$SITE_DOMAIN $MIGRATE_KEY"
 fi
