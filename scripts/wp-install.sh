@@ -190,3 +190,9 @@ fi
 echo "Installation complete."
 echo "Site: https://$SITE_DOMAIN"
 echo "Admin user: $WORDPRESS_ADMIN_USER"
+
+if [ "${PRINT_WP_MIGRATE_CONNECTION:-false}" = "true" ] && \
+    compose run --rm --no-deps wp-cli plugin is-active wp-migrate >/dev/null 2>&1; then
+    MIGRATE_KEY="$(compose run --rm --no-deps wp-cli migratedb setting get connection-key | tail -n 1 | tr -d '\r')"
+    echo "WP_MIGRATE_CONNECTION=https://$SITE_DOMAIN $MIGRATE_KEY"
+fi
