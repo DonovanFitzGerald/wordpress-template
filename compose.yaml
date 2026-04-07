@@ -68,6 +68,7 @@ services:
         volumes:
             - wordpress_data:/var/www/html
             - ./wp-config-extra.php:/var/www/html/wp-config-extra.php:ro
+            - ./wp-plugins:/wp-plugins:ro
         networks:
             - internal
             - redis
