@@ -146,6 +146,15 @@ fi
 echo "Updating env file with database password"
 upsert_env_var "WORDPRESS_DB_PASSWORD" "$DB_PASS" "$ENV_FILE"
 
+ensure_env_var "WORDPRESS_AUTH_KEY" "$ENV_FILE"
+ensure_env_var "WORDPRESS_SECURE_AUTH_KEY" "$ENV_FILE"
+ensure_env_var "WORDPRESS_LOGGED_IN_KEY" "$ENV_FILE"
+ensure_env_var "WORDPRESS_NONCE_KEY" "$ENV_FILE"
+ensure_env_var "WORDPRESS_AUTH_SALT" "$ENV_FILE"
+ensure_env_var "WORDPRESS_SECURE_AUTH_SALT" "$ENV_FILE"
+ensure_env_var "WORDPRESS_LOGGED_IN_SALT" "$ENV_FILE"
+ensure_env_var "WORDPRESS_NONCE_SALT" "$ENV_FILE"
+
 set -a
 . "$ENV_FILE"
 set +a
@@ -157,23 +166,26 @@ echo "Waiting for WordPress container to be ready..."
 sleep 8
 
 echo "Checking whether WordPress is already installed..."
-if compose run --rm --no-deps wp-cli core is-installed >/dev/null 2>&1; then
+if ! compose run --rm --no-deps wp-cli core is-installed >/dev/null 2>&1; then
+    echo "Installing WordPress for https://$SITE_DOMAIN ..."
+    compose run --rm --no-deps wp-cli core install \
+        --url="https://$SITE_DOMAIN" \
+        --title="${WORDPRESS_SITE_TITLE:-$SITE_HOSTNAME}" \
+        --admin_user="$WORDPRESS_ADMIN_USER" \
+        --admin_password="$WORDPRESS_ADMIN_PASSWORD" \
+        --admin_email="$WORDPRESS_ADMIN_EMAIL" \
+        --skip-email
+
+    echo "Flushing rewrite rules..."
+    compose run --rm --no-deps wp-cli rewrite flush --hard
+else
     echo "WordPress is already installed for project: $PROJECT_NAME"
-    echo "Site: https://$SITE_DOMAIN"
-    exit 0
 fi
 
-echo "Installing WordPress for https://$SITE_DOMAIN ..."
-compose run --rm --no-deps wp-cli core install \
-    --url="https://$SITE_DOMAIN" \
-    --title="${SITE_HOSTNAME}" \
-    --admin_user="$WORDPRESS_ADMIN_USER" \
-    --admin_password="$WORDPRESS_ADMIN_PASSWORD" \
-    --admin_email="$WORDPRESS_ADMIN_EMAIL" \
-    --skip-email
-
-echo "Flushing rewrite rules..."
-compose run --rm --no-deps wp-cli rewrite flush --hard
+if [ -n "${WP_MIGRATE_ZIP:-}" ] && [ -f "$WP_MIGRATE_ZIP" ]; then
+    echo "Installing or activating WP Migrate..."
+    compose run --rm --no-deps wp-cli plugin install "$WP_MIGRATE_ZIP" --force
+fi
 
 echo "Installation complete."
 echo "Site: https://$SITE_DOMAIN"
