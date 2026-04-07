@@ -54,6 +54,27 @@ for var in $required_vars; do
     fi
 done
 
+random_secret() {
+    if command -v openssl >/dev/null 2>&1; then
+        openssl rand -base64 48 | tr -d '\n'
+    else
+        head -c 48 /dev/urandom | base64 | tr -d '\n'
+    fi
+}
+
+ensure_env_var() {
+    key="$1"
+    file="$2"
+
+    current_value="$(grep "^${key}=" "$file" 2>/dev/null | head -n 1 | cut -d '=' -f 2- || true)"
+
+    if [ -z "$current_value" ] || [ "$current_value" = "put-a-long-random-string-here" ]; then
+        new_value="$(random_secret)"
+        upsert_env_var "$key" "$new_value" "$file"
+        echo "Generated $key"
+    fi
+}
+
 compose() {
     docker compose --env-file "$ENV_FILE" -p "$PROJECT_NAME" "$@"
 }
