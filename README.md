@@ -223,7 +223,7 @@ docker compose --env-file /opt/wordpress-envs/example.env -p example down
 ### Destroy a site and its volume
 
 ```bash
-docker compose --env-file /opt/wordpress-envs/example.env -p example down -v
+docker compose -p example down --volumes --remove-orphans --rmi local
 ```
 
 Be careful: this removes the WordPress filesystem volume too.

@@ -18,6 +18,10 @@ services:
             - traefik.http.routers.${SITE_HOSTNAME}.entrypoints=websecure
             - traefik.http.routers.${SITE_HOSTNAME}.tls=true
             - traefik.http.services.${SITE_HOSTNAME}.loadbalancer.server.port=80
+            - monitoring.blackbox.enable=true
+            - monitoring.blackbox.hostname=${SITE_DOMAIN}
+            - monitoring.blackbox.scheme=https
+            - monitoring.blackbox.path=/
 
     wordpress:
         build:
